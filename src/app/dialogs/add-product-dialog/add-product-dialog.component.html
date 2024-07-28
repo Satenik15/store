@@ -1,0 +1,104 @@
+<form class="add-product-form" [formGroup]="form">
+    <h2 mat-dialog-title>{{ data.mode | titlecase }} product {{ data.name || ''}}</h2>
+    <mat-dialog-content>
+        <mat-form-field>
+            <mat-label>Name</mat-label>
+            <input type="text" matInput formControlName="name" placeholder="Type product name">
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Description</mat-label>
+            <input type="text" matInput formControlName="description" placeholder="Type description">
+        </mat-form-field>
+        @if(data.mode !== DialogMode.edit) {
+        <mat-form-field>
+            <mat-label>SKU</mat-label>
+            <input type="text" matInput formControlName="sku" placeholder="Type sku"
+                [disabled]="data.mode !== DialogMode.add">
+        </mat-form-field>
+        }
+        <mat-form-field>
+            <mat-label>Cost</mat-label>
+            <input type="number" matInput formControlName="cost" placeholder="Type cost">
+        </mat-form-field>
+        <p>Profile</p>
+        <mat-form-field>
+            <mat-label>Profile type</mat-label>
+            <mat-select formControlName="profile">
+                @for (profile of profiles; track profile) {
+                <mat-option [value]="profile.value">{{profile.name}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        <mat-checkbox formControlName="available">Available</mat-checkbox>
+        <mat-form-field>
+            <mat-label>Backlog</mat-label>
+            <input matInput formControlName="backlog" type="number" min="0">
+        </mat-form-field>
+
+        <div class="add-product-form__progress-bar">
+            <mat-progress-bar mode="determinate" [value]="backdropValue"></mat-progress-bar>
+        </div>
+
+        <div formArrayName="customProperties">
+            @for(property of customProperties.controls; track property; let i = $index) {
+            <div [formGroupName]="i">
+                <mat-form-field class="add-product-form__custom-property">
+                    <mat-label>Custom Property {{ i + 1 }}</mat-label>
+                    <input matInput formControlName="key" />
+                </mat-form-field>
+
+                <div class="add-product-form__property">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Custom Property {{ i + 1 }} value</mat-label>
+                        <input matInput formControlName="value" />
+                        @if("property.get('value')?.invalid && property.get('value')?.touched") {
+                            <mat-error>
+                                Value is required.
+                            </mat-error>
+                        }
+                    </mat-form-field>
+
+                    @if(data.mode === DialogMode.edit) {
+                        <button mat-icon-button extended (click)="removeProperty(customProperties, i)">
+                            <mat-icon color="warn">close</mat-icon>
+                        </button>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+        @if(data.mode !== DialogMode.view) {
+        <div class="add-product-form__add-property-btn">
+            <button mat-flat-button extended (click)="addItem()">
+                <mat-icon>add</mat-icon>
+                Add Property
+            </button>
+        </div>
+        <div formArrayName="properties">
+            @for(property of properties.controls; track property; let i = $index) {
+            <div class="add-product-form__property" [formGroupName]="i">
+                <mat-form-field>
+                    <mat-label>Property name</mat-label>
+                    <input type="text" matInput formControlName="propertyName" placeholder="Type property name">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>Property value</mat-label>
+                    <input type="text" matInput formControlName="propertyValue" placeholder="Type property value">
+                </mat-form-field>
+                <button mat-icon-button extended (click)="removeProperty(properties, i)">
+                    <mat-icon color="warn">close</mat-icon>
+                </button>
+            </div>
+            }
+        </div>
+        }
+    </mat-dialog-content>
+
+    @if(this.data.mode !== DialogMode.view) {
+    <mat-dialog-actions>
+        <button mat-flat-button (click)="onCreateProduct()">{{ data.mode === DialogMode.add ? 'Create' : 'Update'}}</button>
+        <button mat-stroked-button mat-dialog-close>Cancel</button>
+    </mat-dialog-actions>
+    }
+</form>
